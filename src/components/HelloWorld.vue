@@ -1,58 +1,118 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
+  <v-container>
+    <v-layout
+      text-center
+      wrap
+    >
+      <v-flex mb-4>
+        <h1 class="display-2 font-weight-bold mb-3">
+          LINE Things BeetleC
+        </h1>
+        <h2>{{status}}</h2>
+        <h3>{{bleStatus}}</h3>
+      </v-flex>
+
+    </v-layout>
+  </v-container>
 </template>
 
 <script>
-export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
-  }
-}
-</script>
+  export default {
+    data () {
+      return {
+        status: '',
+        USER_SERVICE_UUID: process.env.VUE_APP_USER_SERVICE_UUID,
+        LED_CHARACTERISTIC_UUID: 'E9062E71-9E62-4BC6-B0D3-35CDCD9B027B',
+        bleConnect: false,
+        bleStatus: 'デバイス未接続',
+        characteristic: '',        
+        prevX: 0,
+        prevY: 0,
+        code: ''
+      }
+    },
+    created () {
+      this.initJoyStick()
+    },
+    mounted: function () {
+      liff.init(
+          () => this.initializeLiff()
+      )
+    },    
+    methods: {
+      // BLEが接続できる状態になるまでリトライ
+      liffCheckAvailablityAndDo: async function (callbackIfAvailable) {
+        try {
+          const isAvailable = await liff.bluetooth.getAvailability();
+          if (isAvailable) {
+            callbackIfAvailable()
+          } else {
+            // リトライ
+            this.bleStatus = `Bluetoothをオンにしてください。`
+            setTimeout(() => this.liffCheckAvailablityAndDo(callbackIfAvailable), 10000)
+          }
+        } catch (error) {
+          this.bleStatus = `Bluetoothをオンにしてください。`
+        }
+      },
+      // サービスとキャラクタリスティックにアクセス
+      liffRequestDevice: async function () {
+        const device = await liff.bluetooth.requestDevice()
+        await device.gatt.connect()
+        const service = await device.gatt.getPrimaryService(this.USER_SERVICE_UUID)
+        service.getCharacteristic(this.LED_CHARACTERISTIC_UUID).then(characteristic => {
+          this.characteristic = characteristic
+          this.bleConnect = true
+          this.bleStatus = `デバイスに接続しました！`
+        }).catch(error => {
+          this.bleConnect = true
+          this.bleStatus = `デバイス接続に失敗=${error.message}`
+        })
+      },
+      initializeLiff: async function(){
+        await liff.initPlugins(['bluetooth']);
+        this.liffCheckAvailablityAndDo(() => this.liffRequestDevice())
+      },      
+      initJoyStick () {
+        var self = this
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>
+        var joystick	= new VirtualJoystick({
+          container	: document.getElementById('container'),
+          mouseSupport	: true,
+          limitStickTravel	: true,
+        });
+        joystick.addEventListener('touchStart', function(){
+          console.log('down')
+        })
+        joystick.addEventListener('touchEnd', function(){
+          console.log('up')
+        })
+
+        var newX = 0;
+        var newY = 0;
+        setInterval(function(){
+          newX = Math.round(joystick.deltaX());
+          newY = Math.round(joystick.deltaY()) * -1;
+
+          if (self.prevY != newY) {
+            this.code = String(newY)
+
+            const ch_array = this.code.split("");
+            for(let i = 0; i < 16; i = i + 1) {
+              ch_array[i] = (new TextEncoder('ascii')).encode(ch_array[i]);
+            }
+            self.characteristic.writeValue(new Uint8Array(ch_array)
+            ).catch(error => {
+              self.bleStatus = error.message
+            })
+          }
+
+          self.prevX = newX;
+          self.prevY = newY;
+
+        }, 1/30 * 1000);
+              
+      }
+    }
+  };
+</script>
