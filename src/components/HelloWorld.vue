@@ -112,7 +112,7 @@
           if (newY > 0) {
             led = 2
           } else if (newY < 0) {
-            led = 3
+            led = 1
           } else {
             led = 0
           }
@@ -122,7 +122,6 @@
               y: newY,
               led: led
             }
-            //self.characteristic.writeValue(new TextEncoder('ascii').encode(String(newY))
             var jsonStr = JSON.stringify(param)
             self.characteristic.writeValue(new TextEncoder('ascii').encode(jsonStr)
             ).catch(error => {

@@ -64,7 +64,6 @@ class writeCallback: public BLECharacteristicCallbacks {
     int y = atoi(my_value["y"].as<const char*>());
     int num = atoi(my_value["led"].as<const char*>());
 
-    Serial.println(num);
     leftwheel(y);
     rightwheel(y);
 
@@ -73,13 +72,13 @@ class writeCallback: public BLECharacteristicCallbacks {
       allColor = 0x00;    
     } else if (num == 1) {
       // 赤
-      allColor = 0x11 << 0;
+      allColor = 0x17 << 16;
     } else if (num == 2) {
       // 緑
       allColor = 0x11 << 8;
     } else if (num == 3) {
       // 青
-      allColor = 0x17 << 16;
+      allColor = 0x11 << 0;
     }
     led(ALL_LED, allColor);
   }
