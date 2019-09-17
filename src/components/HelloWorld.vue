@@ -112,7 +112,9 @@
           if (newY > 0) {
             led = 2
           } else if (newY < 0) {
-            led = 1
+            led = 3
+          } else {
+            led = 0
           }
           if (self.prevY != newY) {
             var param = {
