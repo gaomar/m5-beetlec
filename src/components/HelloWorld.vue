@@ -99,6 +99,9 @@
               y: newY
             }
             //self.characteristic.writeValue(new TextEncoder('ascii').encode(String(newY))
+            var jsonStr = JSON.stringify(param)
+            self.status = jsonStr
+
             self.characteristic.writeValue(new TextEncoder('ascii').encode(JSON.stringify(param))
             ).catch(error => {
               self.bleStatus = error.message
