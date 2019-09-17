@@ -8,8 +8,11 @@
         <h1 class="display-2 font-weight-bold mb-3">
           LINE Things BeetleC
         </h1>
-        <h2>{{status}}</h2>
         <h3>{{bleStatus}}</h3>
+        <v-btn class="ma-2" color="secondary" @click="led('0')">消</v-btn>
+        <v-btn class="ma-2" color="error" @click="led('1')">赤</v-btn>
+        <v-btn class="ma-2" color="success" @click="led('2')">緑</v-btn>
+        <v-btn class="ma-2" color="primary" @click="led('3')">青</v-btn>
       </v-flex>
 
     </v-layout>
@@ -39,6 +42,21 @@
       )
     },    
     methods: {
+      led(value) {
+        this.status = value
+
+        var param = {
+          x: newX,
+          y: newY,
+          led: value
+        }
+        var jsonStr = JSON.stringify(param)
+        self.characteristic.writeValue(new TextEncoder('ascii').encode(jsonStr)
+        ).catch(error => {
+          self.bleStatus = error.message
+        })
+
+      },
       // BLEが接続できる状態になるまでリトライ
       liffCheckAvailablityAndDo: async function (callbackIfAvailable) {
         try {
@@ -93,10 +111,11 @@
           newX = Math.round(joystick.deltaX());
           newY = Math.round(joystick.deltaY()) * -1;
 
-          if (self.prevY != newY || self.prevX != newX) {
+          if (self.prevY != newY) {
             var param = {
               x: newX,
-              y: newY
+              y: newY,
+              led: self.status
             }
             //self.characteristic.writeValue(new TextEncoder('ascii').encode(String(newY))
             var jsonStr = JSON.stringify(param)

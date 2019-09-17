@@ -31,6 +31,9 @@ BLECharacteristic* writeCharacteristic;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
+#define ALL_LED 7
+uint32_t allColor = 0;
+
 void BtnSet() {
   pinMode(37, INPUT_PULLUP);
 }
@@ -55,19 +58,29 @@ class writeCallback: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *bleWriteCharacteristic) {
     // LIFFから来るデータを取得
     std::string value = bleWriteCharacteristic->getValue();
-
+    DynamicJsonBuffer jsonBuffer;
     JsonObject& my_value = jsonBuffer.parseObject(value.c_str());
-    String myX = my_value["x"].as<const char*>();
-    String myY = my_value["y"].as<const char*>();
-    Serial.printf("x:%s y:%s", myX, myY);
-    Serial.println();
-/*    
-    int myNum = atoi(value.c_str());
+    int x = atoi(my_value["x"].as<const char*>());
+    int y = atoi(my_value["y"].as<const char*>());
+    int num = atoi(my_value["led"].as<const char*>());
     
-    leftwheel(myNum);
-    rightwheel(myNum);
-*/
-    
+    leftwheel(y);
+    rightwheel(y);
+
+    if (num == 0) {
+      // 消す
+      allColor = 0x00;    
+    } else if (num == 1) {
+      // 赤
+      allColor = 0x11 << 0;
+    } else if (num == 2) {
+      // 緑
+      allColor = 0x11 << 8;
+    } else if (num == 3) {
+      // 青
+      allColor = 0x17 << 16;
+    }
+    led(ALL_LED, allColor);
   }
 };
 
