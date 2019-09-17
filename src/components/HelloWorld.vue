@@ -25,10 +25,9 @@
         LED_CHARACTERISTIC_UUID: 'E9062E71-9E62-4BC6-B0D3-35CDCD9B027B',
         bleConnect: false,
         bleStatus: 'デバイス未接続',
-        characteristic: '',        
+        characteristic: '',
         prevX: 0,
-        prevY: 0,
-        code: ''
+        prevY: 0
       }
     },
     created () {
@@ -95,13 +94,6 @@
           newY = Math.round(joystick.deltaY()) * -1;
 
           if (self.prevY != newY) {
-            this.code = String(newY)
-
-            const ch_array = this.code.split("");
-            for(let i = 0; i < 16; i = i + 1) {
-              ch_array[i] = (new TextEncoder('ascii')).encode(ch_array[i]);
-            }
-            // self.characteristic.writeValue(new Uint8Array(ch_array)
             self.characteristic.writeValue(new TextEncoder('ascii').encode(String(newY))
             ).catch(error => {
               self.bleStatus = error.message

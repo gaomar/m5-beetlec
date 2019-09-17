@@ -55,7 +55,7 @@ class writeCallback: public BLECharacteristicCallbacks {
     // LIFFから来るデータを取得
     std::string value = bleWriteCharacteristic->getValue();
     int myNum = atoi(value.c_str());
-
+    
     leftwheel(myNum);
     rightwheel(myNum);
     
