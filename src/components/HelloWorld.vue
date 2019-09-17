@@ -101,7 +101,8 @@
             for(let i = 0; i < 16; i = i + 1) {
               ch_array[i] = (new TextEncoder('ascii')).encode(ch_array[i]);
             }
-            self.characteristic.writeValue(new Uint8Array(ch_array)
+            // self.characteristic.writeValue(new Uint8Array(ch_array)
+            self.characteristic.writeValue(new TextEncoder('ascii').encode(String(newY))
             ).catch(error => {
               self.bleStatus = error.message
             })
