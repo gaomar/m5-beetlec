@@ -9,10 +9,6 @@
           LINE Things BeetleC
         </h1>
         <h3>{{bleStatus}}</h3>
-        <v-btn class="ma-2" color="secondary" @click="led('0')">消</v-btn>
-        <v-btn class="ma-2" color="error" @click="led('1')">赤</v-btn>
-        <v-btn class="ma-2" color="success" @click="led('2')">緑</v-btn>
-        <v-btn class="ma-2" color="primary" @click="led('3')">青</v-btn>
       </v-flex>
 
     </v-layout>
@@ -42,12 +38,13 @@
       )
     },    
     methods: {
-      led(value) {
+      led (value) {
+        console.log(value)
         this.status = value
 
         var param = {
-          x: newX,
-          y: newY,
+          x: 0,
+          y: 0,
           led: value
         }
         var jsonStr = JSON.stringify(param)
@@ -105,17 +102,23 @@
           console.log('up')
         })
 
-        var newX = 0;
-        var newY = 0;
-        setInterval(function(){
-          newX = Math.round(joystick.deltaX());
-          newY = Math.round(joystick.deltaY()) * -1;
+        var newX = 0
+        var newY = 0
+        var led = 0
 
+        setInterval(function() {
+          newX = Math.round(joystick.deltaX());
+          newY = Math.round(joystick.deltaY()) * -1
+          if (newY > 0) {
+            led = 2
+          } else if (newY < 0) {
+            led = 1
+          }
           if (self.prevY != newY) {
             var param = {
               x: newX,
               y: newY,
-              led: self.status
+              led: led
             }
             //self.characteristic.writeValue(new TextEncoder('ascii').encode(String(newY))
             var jsonStr = JSON.stringify(param)

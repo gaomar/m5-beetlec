@@ -63,7 +63,8 @@ class writeCallback: public BLECharacteristicCallbacks {
     int x = atoi(my_value["x"].as<const char*>());
     int y = atoi(my_value["y"].as<const char*>());
     int num = atoi(my_value["led"].as<const char*>());
-    
+
+    Serial.println(num);
     leftwheel(y);
     rightwheel(y);
 
