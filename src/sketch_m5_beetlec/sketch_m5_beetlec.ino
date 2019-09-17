@@ -1,4 +1,5 @@
 #include <M5StickC.h>
+#include <ArduinoJson.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
@@ -54,10 +55,18 @@ class writeCallback: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *bleWriteCharacteristic) {
     // LIFFから来るデータを取得
     std::string value = bleWriteCharacteristic->getValue();
+
+    JsonObject& my_value = jsonBuffer.parseObject(value.c_str());
+    String myX = my_value["x"].as<const char*>();
+    String myY = my_value["y"].as<const char*>();
+    Serial.printf("x:%s y:%s", myX, myY);
+    Serial.println();
+/*    
     int myNum = atoi(value.c_str());
     
     leftwheel(myNum);
     rightwheel(myNum);
+*/
     
   }
 };
@@ -114,7 +123,6 @@ void setup() {
   Serial.println("Ready to Connect");
 
   BtnSet();
-  blink();
 }
 
 void loop() {
@@ -136,6 +144,7 @@ void loop() {
     M5.Lcd.setTextColor(GREEN);
     M5.Lcd.setTextDatum(MC_DATUM);  
     M5.Lcd.drawString("Connect",80,10);
+    blink();
     
   }
   

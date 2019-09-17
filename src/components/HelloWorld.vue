@@ -93,8 +93,13 @@
           newX = Math.round(joystick.deltaX());
           newY = Math.round(joystick.deltaY()) * -1;
 
-          if (self.prevY != newY) {
-            self.characteristic.writeValue(new TextEncoder('ascii').encode(String(newY))
+          if (self.prevY != newY || self.prevX != newX) {
+            var param = {
+              x: newX,
+              y: newY
+            }
+            //self.characteristic.writeValue(new TextEncoder('ascii').encode(String(newY))
+            self.characteristic.writeValue(new TextEncoder('ascii').encode(JSON.stringify(param))
             ).catch(error => {
               self.bleStatus = error.message
             })
