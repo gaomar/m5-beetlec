@@ -6,7 +6,7 @@
     >
       <v-flex mb-4>
         <h1 class="display-2 font-weight-bold mb-3">
-          LINE Things BeetleC
+          LINE Things BeetleC LIFF v2
         </h1>
         <h3>{{bleStatus}}</h3>
       </v-flex>
@@ -33,8 +33,17 @@
       this.initJoyStick()
     },
     mounted: function () {
+      var me = this
       liff.init(
-          () => this.initializeLiff()
+        {
+          liffId: process.env.VUE_APP_LIFF_ID
+        },
+        data => {
+          me.initializeLiff()
+        },
+        err => {
+          console.log('LIFF initialization failed', err)
+        }
       )
     },    
     methods: {
